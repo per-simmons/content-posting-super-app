@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Editor Focus</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #bbbbbb;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+      padding: 40px;
+      border-radius: 8px;
+    }
+    .title-field {
+      border: 2px solid #3a3a3a;
+      padding: 10px;
+      margin-bottom: 20px;
+      min-height: 50px;
+      outline: none;
+      font-size: 2.125rem;
+      font-weight: bold;
+    }
+    .body-field {
+      border: 2px solid #3a3a3a;
+      padding: 10px;
+      min-height: 400px;
+      outline: none;
+      font-size: 1.125rem;
+      line-height: 1.75;
+    }
+    .title-field:empty:before {
+      content: 'Title...';
+      opacity: 0.5;
+    }
+    .body-field:empty:before {
+      content: 'Start writing your content here...';
+      opacity: 0.5;
+    }
+    .status {
+      margin: 20px 0;
+      padding: 10px;
+      background: #3a3a3a;
+      border-radius: 4px;
+    }
+    h1, h2, h3 {
+      margin: 0.5em 0;
+    }
+    h1 { font-size: 2.5em; font-weight: 700; }
+    h2 { font-size: 2em; font-weight: 600; }
+    h3 { font-size: 1.75em; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Editor Focus Test</h2>
+    <div class="status" id="status">Click in either field to test focus...</div>
+    
+    <div 
+      class="title-field"
+      contenteditable="true"
+      data-editor-type="title"
+      id="title"
+    ></div>
+    
+    <div 
+      class="body-field"
+      contenteditable="true"
+      data-editor-type="main"
+      id="body"
+    ></div>
+  </div>
+
+  <script>
+    const titleField = document.getElementById('title');
+    const bodyField = document.getElementById('body');
+    const status = document.getElementById('status');
+    
+    // Test focus events
+    titleField.addEventListener('focus', () => {
+      status.textContent = '✅ Title field focused - you can type!';
+      status.style.background = '#2a4a2a';
+    });
+    
+    titleField.addEventListener('blur', () => {
+      status.textContent = 'Title field lost focus';
+      status.style.background = '#3a3a3a';
+    });
+    
+    bodyField.addEventListener('focus', () => {
+      status.textContent = '✅ Body field focused - you can type!';
+      status.style.background = '#2a4a2a';
+    });
+    
+    bodyField.addEventListener('blur', () => {
+      status.textContent = 'Body field lost focus';
+      status.style.background = '#3a3a3a';
+    });
+    
+    // Test input events
+    titleField.addEventListener('input', (e) => {
+      console.log('Title input:', e.target.innerHTML);
+    });
+    
+    bodyField.addEventListener('input', (e) => {
+      console.log('Body input:', e.target.innerHTML);
+    });
+    
+    // Test if contenteditable is properly set
+    console.log('Title contentEditable:', titleField.contentEditable);
+    console.log('Body contentEditable:', bodyField.contentEditable);
+    
+    // Try to focus programmatically
+    setTimeout(() => {
+      titleField.focus();
+      console.log('Attempted to focus title field');
+    }, 1000);
+  </script>
+</body>
+</html>

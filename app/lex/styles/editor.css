@@ -1,0 +1,128 @@
+/* Editor Heading Styles - Use fixed pixel sizes to prevent compounding */
+[contenteditable="true"] h1,
+[data-editor-type="title"] h1,
+[data-editor-type="main"] h1 {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 0.5em !important;
+}
+
+[contenteditable="true"] h2,
+[data-editor-type="title"] h2,
+[data-editor-type="main"] h2 {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  margin-bottom: 0.5em !important;
+}
+
+[contenteditable="true"] h3,
+[data-editor-type="title"] h3,
+[data-editor-type="main"] h3 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  margin-bottom: 0.5em !important;
+}
+
+[contenteditable="true"] h4,
+[data-editor-type="title"] h4,
+[data-editor-type="main"] h4 {
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  margin-bottom: 0.5em !important;
+}
+
+[contenteditable="true"] h5,
+[data-editor-type="title"] h5,
+[data-editor-type="main"] h5 {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 0.5em !important;
+}
+
+[contenteditable="true"] h6,
+[data-editor-type="title"] h6,
+[data-editor-type="main"] h6 {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 0.5em !important;
+}
+
+/* Default paragraph style for normal text */
+[contenteditable="true"] p,
+[data-editor-type="title"] p,
+[data-editor-type="main"] p {
+  font-size: 18px !important;
+  font-weight: normal !important;
+  line-height: 1.6 !important;
+}
+
+/* Title field specific - when no heading is applied */
+[data-editor-type="title"]:not(:has(h1)):not(:has(h2)):not(:has(h3)):not(:has(h4)):not(:has(h5)):not(:has(h6)) {
+  font-size: 2.125rem; /* 34px */
+  font-weight: bold;
+}
+
+/* Title placeholder styling */
+[data-editor-type="title"] h1:empty::before {
+  content: 'Title...';
+  opacity: 0.5;
+}
+
+/* Fallback for empty title field */
+[data-editor-type="title"]:empty::before {
+  content: 'Title...';
+  opacity: 0.5;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+/* Body editor specific - default text style */
+[data-editor-type="main"] {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+/* Show placeholder on empty lines in body editor */
+[data-editor-type="main"]:empty::before {
+  content: 'Type ⌘K for commands';
+  opacity: 0.4;
+  color: #666666;
+}
+
+/* Show placeholder for divs with data-placeholder attribute */
+[data-editor-type="main"] .empty-line[data-placeholder]:empty::before,
+[data-editor-type="main"] .empty-line[data-placeholder]:has(br:only-child)::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  color: #666666;
+  position: absolute;
+}
+
+/* When typing in placeholder div, remove the class */
+[data-editor-type="main"] .empty-line:not(:empty):not(:has(br:only-child)) {
+  position: relative;
+}
+
+[data-editor-type="main"] .empty-line:not(:empty):not(:has(br:only-child))::before {
+  display: none;
+}
+
+/* Ensure contenteditable areas are focusable and editable */
+[contenteditable="true"] {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+[data-editor-type="title"],
+[data-editor-type="main"] {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}

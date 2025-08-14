@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clean Test</title>
+</head>
+<body>
+    <h1>Clean ContentEditable Test</h1>
+    <div contenteditable="true" style="border: 2px solid black; padding: 20px; min-height: 100px; direction: ltr;">
+        Type here...
+    </div>
+    <script>
+        const editor = document.querySelector('[contenteditable="true"]');
+        editor.addEventListener('input', () => {
+            console.log('Content:', editor.textContent);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manual Test</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 40px;
+      background: #1a1a1a;
+      color: #bbbbbb;
+    }
+    #editor {
+      border: 2px solid #3a3a3a;
+      padding: 20px;
+      min-height: 200px;
+      background: #242424;
+      outline: none;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    #info {
+      margin-top: 20px;
+      padding: 20px;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Manual Toolbar Test</h1>
+  
+  <div id="editor" contenteditable="true">
+    Type some text here and select it
+  </div>
+  
+  <div id="info">
+    <p>Instructions:</p>
+    <ol>
+      <li>Type some text in the editor above</li>
+      <li>Select the text with your mouse</li>
+      <li>Check if the text appears normal or reversed</li>
+      <li>Press Cmd+B to make it bold</li>
+      <li>Check if bold formatting is applied</li>
+    </ol>
+    
+    <p>Selection info: <span id="selection-info">None</span></p>
+    <p>Editor HTML: <code id="editor-html">None</code></p>
+  </div>
+  
+  <script>
+    const editor = document.getElementById('editor');
+    const selectionInfo = document.getElementById('selection-info');
+    const editorHtml = document.getElementById('editor-html');
+    
+    document.addEventListener('selectionchange', () => {
+      const sel = window.getSelection();
+      if (sel && sel.toString()) {
+        selectionInfo.textContent = `"${sel.toString()}" (${sel.toString().length} chars)`;
+      } else {
+        selectionInfo.textContent = 'None';
+      }
+      editorHtml.textContent = editor.innerHTML;
+    });
+    
+    editor.addEventListener('input', () => {
+      editorHtml.textContent = editor.innerHTML;
+    });
+    
+    // Initial update
+    editorHtml.textContent = editor.innerHTML;
+  </script>
+</body>
+</html>

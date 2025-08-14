@@ -1,0 +1,55 @@
+.editor[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  opacity: 0.5;
+}
+
+.editor h1 { 
+  font-size: 1.5rem; 
+  font-weight: 700; 
+  margin: 1rem 0; 
+}
+
+.editor h2 { 
+  font-size: 1.25rem; 
+  font-weight: 600; 
+  margin: 0.875rem 0; 
+}
+
+.editor h3 { 
+  font-size: 1.125rem; 
+  font-weight: 600; 
+  margin: 0.75rem 0; 
+}
+
+.editor p { 
+  margin: 0.5rem 0; 
+}
+
+.editor ul, 
+.editor ol { 
+  margin: 0.5rem 0; 
+  padding-left: 1.5rem; 
+}
+
+.editor blockquote { 
+  border-left: 3px solid #525252; 
+  padding-left: 1rem; 
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.editorLight blockquote {
+  border-left-color: #d4d4d8;
+}
+
+.editor pre { 
+  background: #171717; 
+  padding: 0.75rem; 
+  border-radius: 0.375rem;
+  font-family: monospace;
+  overflow-x: auto;
+}
+
+.editorLight pre {
+  background: #f3f4f6;
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Toolbar</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #bbbbbb;
+    }
+    #editor {
+      border: 2px solid #3a3a3a;
+      padding: 20px;
+      min-height: 200px;
+      background: #242424;
+      outline: none;
+      margin-top: 20px;
+    }
+    #toolbar {
+      padding: 10px;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+      display: flex;
+      gap: 5px;
+    }
+    button {
+      padding: 5px 10px;
+      background: #3a3a3a;
+      color: #bbbbbb;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #4a4a4a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Toolbar Test</h1>
+  
+  <div id="toolbar">
+    <button onclick="format('bold')">Bold</button>
+    <button onclick="format('italic')">Italic</button>
+    <button onclick="format('underline')">Underline</button>
+    <button onclick="insertLink()">Link</button>
+    <button onclick="format('formatBlock', 'H1')">H1</button>
+    <button onclick="format('formatBlock', 'P')">Normal</button>
+  </div>
+  
+  <div id="editor" contenteditable="true">
+    Type some text here and select it to test formatting...
+  </div>
+  
+  <script>
+    let savedSelection = null;
+    
+    function saveSelection() {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        savedSelection = sel.getRangeAt(0).cloneRange();
+      }
+    }
+    
+    function restoreSelection() {
+      if (savedSelection) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedSelection);
+        return true;
+      }
+      return false;
+    }
+    
+    function format(command, value) {
+      const editor = document.getElementById('editor');
+      editor.focus();
+      restoreSelection();
+      document.execCommand(command, false, value || null);
+    }
+    
+    function insertLink() {
+      const url = prompt('Enter URL:');
+      if (url) {
+        format('createLink', url);
+      }
+    }
+    
+    // Save selection on mouseup and keyup
+    document.getElementById('editor').addEventListener('mouseup', saveSelection);
+    document.getElementById('editor').addEventListener('keyup', saveSelection);
+    
+    // Save selection before button clicks
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        saveSelection();
+      });
+    });
+  </script>
+</body>
+</html>

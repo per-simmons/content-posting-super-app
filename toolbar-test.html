@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toolbar Test</title>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding: 40px;
+      background: #1a1a1a;
+      color: #bbbbbb;
+    }
+    #editor {
+      border: 2px solid #3a3a3a;
+      padding: 20px;
+      min-height: 300px;
+      background: #242424;
+      outline: none;
+      margin-top: 20px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    #toolbar {
+      padding: 10px;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+      display: none;
+      gap: 5px;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    #toolbar.show {
+      display: flex;
+    }
+    button {
+      padding: 5px 10px;
+      background: #3a3a3a;
+      color: #bbbbbb;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #4a4a4a;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+      border-radius: 4px;
+      min-width: 120px;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      z-index: 1001;
+    }
+    .dropdown-content.show {
+      display: block;
+    }
+    .dropdown-content button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 8px 12px;
+      border-radius: 0;
+    }
+    .dropdown-content button:hover {
+      background: #4a4a4a;
+    }
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: #666;
+      margin: 0 5px;
+    }
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #242424;
+      border: 2px solid #3a3a3a;
+      padding: 10px 20px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Toolbar Functionality Test</h1>
+  
+  <div id="toolbar">
+    <div class="dropdown">
+      <button id="headingBtn" onclick="toggleDropdown()">Normal ▼</button>
+      <div id="headingDropdown" class="dropdown-content">
+        <button onclick="setHeading('P', 'Normal')">Normal</button>
+        <button onclick="setHeading('H1', 'H1')" style="font-size: 18px; font-weight: bold;">Heading 1</button>
+        <button onclick="setHeading('H2', 'H2')" style="font-size: 16px; font-weight: bold;">Heading 2</button>
+        <button onclick="setHeading('H3', 'H3')" style="font-size: 15px; font-weight: bold;">Heading 3</button>
+        <button onclick="setHeading('H4', 'H4')" style="font-size: 14px; font-weight: bold;">Heading 4</button>
+        <button onclick="setHeading('H5', 'H5')" style="font-size: 13px; font-weight: bold;">Heading 5</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button onclick="format('bold')">B</button>
+    <button onclick="format('italic')">I</button>
+    <button onclick="format('underline')">U</button>
+    <button onclick="format('strikethrough')">S</button>
+    <div class="divider"></div>
+    <button onclick="insertLink()">Link</button>
+    <button onclick="format('formatBlock', 'BLOCKQUOTE')">Quote</button>
+    <button onclick="insertCode()">Code</button>
+    <div class="divider"></div>
+    <button onclick="format('subscript')">X₂</button>
+    <button onclick="format('superscript')">X²</button>
+    <button onclick="insertFootnote()">Fn</button>
+    <div class="divider"></div>
+    <button onclick="format('insertHorizontalRule')">—</button>
+    <button onclick="clearFormat()">Clear</button>
+  </div>
+  
+  <div id="editor" contenteditable="true">
+    Select this text to test the toolbar functionality. Try all the different formatting options!
+  </div>
+  
+  <div id="status">
+    <div>Last action: <span id="lastAction">None</span></div>
+    <div>Selection: <span id="selectionStatus">None</span></div>
+  </div>
+  
+  <script>
+    let savedSelection = null;
+    let footnoteCounter = 1;
+    
+    function updateStatus(action) {
+      document.getElementById('lastAction').textContent = action + ' at ' + new Date().toLocaleTimeString();
+    }
+    
+    function saveSelection() {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        savedSelection = sel.getRangeAt(0).cloneRange();
+        document.getElementById('selectionStatus').textContent = 'Saved';
+        return true;
+      }
+      return false;
+    }
+    
+    function restoreSelection() {
+      if (savedSelection) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedSelection);
+        document.getElementById('selectionStatus').textContent = 'Restored';
+        return true;
+      }
+      return false;
+    }
+    
+    function format(command, value) {
+      const editor = document.getElementById('editor');
+      editor.focus();
+      
+      // Small delay to ensure focus
+      setTimeout(() => {
+        document.execCommand(command, false, value || undefined);
+        editor.focus();
+        updateStatus(command + (value ? ' with ' + value : ''));
+      }, 10);
+    }
+    
+    function toggleDropdown() {
+      const dropdown = document.getElementById('headingDropdown');
+      dropdown.classList.toggle('show');
+    }
+    
+    function setHeading(tag, label) {
+      const editor = document.getElementById('editor');
+      editor.focus();
+      
+      setTimeout(() => {
+        if (tag === 'P') {
+          document.execCommand('formatBlock', false, 'P');
+        } else {
+          document.execCommand('formatBlock', false, tag);
+        }
+        document.getElementById('headingBtn').textContent = label + ' ▼';
+        document.getElementById('headingDropdown').classList.remove('show');
+        editor.focus();
+        updateStatus('Set heading to ' + label);
+      }, 10);
+    }
+    
+    function insertLink() {
+      const url = prompt('Enter URL:');
+      if (url) {
+        format('createLink', url);
+      }
+    }
+    
+    function insertCode() {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const text = sel.getRangeAt(0).toString();
+        const editor = document.getElementById('editor');
+        editor.focus();
+        
+        setTimeout(() => {
+          if (text) {
+            document.execCommand('insertHTML', false, `<code style="background: #3a3a3a; padding: 2px 4px; border-radius: 3px;">${text}</code>`);
+          } else {
+            document.execCommand('insertHTML', false, '<code style="background: #3a3a3a; padding: 2px 4px; border-radius: 3px;">&nbsp;</code>');
+          }
+          editor.focus();
+          updateStatus('Inserted inline code');
+        }, 10);
+      }
+    }
+    
+    function insertFootnote() {
+      const id = footnoteCounter++;
+      const editor = document.getElementById('editor');
+      editor.focus();
+      
+      setTimeout(() => {
+        document.execCommand('insertHTML', false, `<sup>[${id}]</sup>`);
+        editor.focus();
+        updateStatus('Inserted footnote ' + id);
+      }, 10);
+    }
+    
+    function clearFormat() {
+      const editor = document.getElementById('editor');
+      editor.focus();
+      
+      setTimeout(() => {
+        document.execCommand('removeFormat');
+        document.execCommand('formatBlock', false, 'P');
+        editor.focus();
+        updateStatus('Cleared formatting');
+      }, 10);
+    }
+    
+    // Show/hide toolbar based on selection
+    document.getElementById('editor').addEventListener('mouseup', function() {
+      const sel = window.getSelection();
+      const text = sel.toString();
+      const toolbar = document.getElementById('toolbar');
+      
+      if (text.length > 0) {
+        toolbar.classList.add('show');
+        saveSelection();
+      } else {
+        toolbar.classList.remove('show');
+      }
+    });
+    
+    // Save selection before any button click
+    document.querySelectorAll('#toolbar button').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        saveSelection();
+      });
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.getElementById('headingDropdown').classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>

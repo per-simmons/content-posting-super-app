@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root { color-scheme: light dark; }
+html, body { 
+  margin: 0; 
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+* { box-sizing: border-box; }
+
+/* Custom placeholder styling */
+input::placeholder {
+  color: #BBBBBB;
+  opacity: 0.5;
+}
+
