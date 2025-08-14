@@ -6,6 +6,9 @@ import { runTwitterStep } from "@/lib/voice-emulator/steps/twitter"
 import { runLinkedInStep } from "@/lib/voice-emulator/steps/linkedin"
 import { runBlogStep } from "@/lib/voice-emulator/steps/blog"
 
+// Extend timeout for long-running API calls
+export const maxDuration = 300 // 5 minutes
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

@@ -66,7 +66,14 @@ Also provide a brief explanation of what you found. If you cannot find a specifi
     const content = data.choices[0].message.content
     
     // Try to extract JSON from the response
-    let sources = {
+    let sources: {
+      newsletter: string | null
+      twitter: string | null
+      linkedin: string | null
+      blog: string | null
+      youtube: string | null
+      substack: string | null
+    } = {
       newsletter: null,
       twitter: null,
       linkedin: null,

@@ -57,6 +57,11 @@ export async function updateSessionStep(
   const session = sessions.get(sessionId)
   if (!session) return
   
+  // Initialize steps array if not present
+  if (!session.steps) {
+    session.steps = []
+  }
+  
   const existingStepIndex = session.steps.findIndex(s => s.step === step)
   const now = new Date().toISOString()
   

@@ -57,8 +57,7 @@ export function VoiceEmulator({ darkMode, borderClass, textSecondary }: VoiceEmu
     if (!formData.creatorName.trim()) {
       toast({
         title: "Creator name required",
-        description: "Please enter the name of the creator you want to emulate",
-        variant: "destructive"
+        description: "Please enter the name of the creator you want to emulate"
       })
       return
     }
@@ -85,8 +84,7 @@ export function VoiceEmulator({ darkMode, borderClass, textSecondary }: VoiceEmu
       console.error("Error starting voice emulator:", error)
       toast({
         title: "Failed to start",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
+        description: error instanceof Error ? error.message : "An error occurred"
       })
       setIsRunning(false)
     }
@@ -112,8 +110,7 @@ export function VoiceEmulator({ darkMode, borderClass, textSecondary }: VoiceEmu
           } else {
             toast({
               title: "Pipeline failed",
-              description: "Check the progress tracker for error details",
-              variant: "destructive"
+              description: "Check the progress tracker for error details"
             })
           }
         }
@@ -290,7 +287,7 @@ export function VoiceEmulator({ darkMode, borderClass, textSecondary }: VoiceEmu
             <div className={`border-t ${borderClass} p-4`}>
               <div className="space-y-2">
                 {PIPELINE_STEPS.map((stepDef) => {
-                  const stepResult = session.steps.find(s => s.step === stepDef.key)
+                  const stepResult = session.steps?.find(s => s.step === stepDef.key)
                   const status = stepResult?.status || "pending"
                   const isExpanded = expandedSteps.has(stepDef.key)
                   

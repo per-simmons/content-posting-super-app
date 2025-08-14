@@ -130,13 +130,16 @@ async function executeStep(
       const session = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
       return await runConsolidationStep(session, context)
     case "vectorization":
-      return await runVectorizationStep(sessionId, context)
+      const sessionVec = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
+      return await runVectorizationStep(sessionVec, context)
     case "retrieval":
-      return await runRetrievalStep(sessionId, context)
+      const sessionRet = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
+      return await runRetrievalStep(sessionRet, context)
     case "analysis":
       return await runAnalysisStep(sessionId, context)
     case "synthesis":
-      return await runSynthesisStep(sessionId, context)
+      const sessionSyn = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
+      return await runSynthesisStep(sessionSyn, context)
     default:
       throw new Error(`Unknown pipeline step: ${step}`)
   }

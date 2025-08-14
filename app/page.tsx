@@ -452,13 +452,13 @@ function ToolRunner({ toolKey }: { toolKey: (typeof AMPLIFY_FEATURES_MOCK)[numbe
     setOutput(null)
     await new Promise((r) => setTimeout(r, 1000))
     const text =
-      toolKey === "captions"
-        ? "00:00:01 Hello everyone.\n00:00:03 Welcome to the session.\n00:00:06 Let’s get started."
-        : toolKey === "description"
-          ? "A concise summary of your content highlighting the key points and takeaways."
-          : toolKey === "miniCuts"
-            ? "3 mini-cuts identified at 00:18, 02:42, and 05:10."
-            : "Demo complete: All systems operational."
+      toolKey === "miniCuts"
+        ? "3 mini-cuts identified at 00:18, 02:42, and 05:10."
+        : toolKey === "sped"
+          ? "Speed-up demo created: 2x speed with key moments highlighted."
+          : toolKey === "miniVideo"
+            ? "Mini video generated: 30-second highlight reel ready."
+            : "Process preview complete: All systems operational."
     setOutput(text)
     setRunning(false)
   }
@@ -2203,8 +2203,6 @@ function AmplifyToolView({
     recordingScript: string
   } | undefined>(undefined)
 
-  const isCaptions = feature === "captions"
-  const isDescription = feature === "description"
   const isMini = feature === "mini"
   const isSped = feature === "sped"
   const isMiniVideo = feature === "miniVideo"
@@ -2223,18 +2221,6 @@ function AmplifyToolView({
     setProcess(undefined)
 
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    if (isCaptions) {
-      setSummary("Generated 3 captions")
-      setCaptions(["0:00 - Intro", "0:15 - Main topic", "0:45 - Outro"])
-    }
-
-    if (isDescription) {
-      setSummary("Generated a description")
-      setDescription(
-        "In this video, I talk about the main topic and give a brief overview of the outro. I also mention the intro and give a brief overview of the main topic.",
-      )
-    }
 
     if (isMini) {
       setSummary("Found 2 mini cuts")
@@ -2282,8 +2268,6 @@ function AmplifyToolView({
     setStatus("done")
 
     const data: AmplifyOutput = {}
-    if (isCaptions) data.captions = captions
-    if (isDescription) data.description = description
     if (isMini) data.miniCuts = miniCuts
     if (isSped) data.sped = sped
     if (isMiniVideo) data.miniVideo = miniVideo
@@ -2538,9 +2522,6 @@ function SEOAgentFlow({
           <SEOOutlineAgent 
             darkMode={darkMode} 
             textSecondary={textSecondary}
-            keywords={keywords}
-            serpAnalysis={serpAnalysis}
-            strategy={strategyData}
           />
         )}
         {stepIndex === 4 && <SEOWriterAgent darkMode={darkMode} textSecondary={textSecondary} />}
