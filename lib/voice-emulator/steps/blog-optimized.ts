@@ -64,13 +64,23 @@ export async function runBlogStepOptimized(sessionId: string, context: any) {
     console.log("Step 3: Extracting content with Jina.ai...")
     const articles = await extractWithJina(blogPostUrls.slice(0, 50))
     
-    console.log(`Successfully extracted ${articles.length} articles`)
+    // Step 4: Get 5 most popular/influential posts via Perplexity (2-3 seconds)
+    console.log("Step 4: Finding most popular posts with Perplexity...")
+    const popularPosts = await getPopularPosts(blogUrl, targetName)
+    
+    // Merge popular posts with extracted articles (avoid duplicates)
+    const existingUrls = new Set(articles.map(a => a.url))
+    const newPopularPosts = popularPosts.filter(p => !existingUrls.has(p.url))
+    const allArticles = [...articles, ...newPopularPosts]
+    
+    console.log(`Successfully extracted ${articles.length} articles + ${newPopularPosts.length} popular posts`)
     
     return {
-      articles,
+      articles: allArticles,
       blogUrl,
-      totalArticles: articles.length,
-      method: 'optimized-firecrawl-gpt-jina'
+      totalArticles: allArticles.length,
+      popularPostsCount: popularPosts.length,
+      method: 'optimized-firecrawl-gpt-jina-perplexity'
     }
 
   } catch (error) {
@@ -127,6 +137,69 @@ async function extractWithJina(urls: string[]): Promise<any[]> {
   }
 
   return articles
+}
+
+async function getPopularPosts(blogUrl: string, targetName: string): Promise<any[]> {
+  try {
+    const prompt = `Find the 5 most popular, influential, or important blog posts/articles from ${blogUrl} by ${targetName}.
+These should be their most referenced, shared, or impactful pieces.
+For each post provide:
+1. Title
+2. URL
+3. Why it's influential/popular
+
+Return as JSON array with these exact keys: title, url, influence_reason`
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.2
+      })
+    })
+
+    if (!response.ok) {
+      console.error(`Perplexity popular posts failed: ${response.status}`)
+      return []
+    }
+
+    const data = await response.json()
+    const content = data.choices[0].message.content
+
+    // Try to parse as JSON
+    try {
+      const posts = JSON.parse(content)
+      if (Array.isArray(posts) && posts.length > 0) {
+        // Extract content for each popular post with Jina
+        const urls = posts.map(p => p.url).filter(Boolean)
+        const extractedPosts = await extractWithJina(urls)
+        
+        // Merge Perplexity metadata with extracted content
+        return extractedPosts.map((post, i) => ({
+          ...post,
+          isPopular: true,
+          influenceReason: posts[i]?.influence_reason
+        }))
+      }
+    } catch (parseError) {
+      console.error("Failed to parse Perplexity popular posts as JSON")
+    }
+
+    return []
+  } catch (error) {
+    console.error("Error getting popular posts:", error)
+    return []
+  }
 }
 
 async function fallbackToPerplexity(blogUrl: string, targetName: string): Promise<any> {
