@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server'
-import { tasks } from '@trigger.dev/sdk/v3'
+import { voiceEmulatorPipeline } from '@/jobs/voice-emulator'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     
     // Trigger the voice emulator pipeline with the provided data
-    const result = await tasks.trigger(
-      'voice-emulator-pipeline',
-      body
-    )
+    const result = await voiceEmulatorPipeline.trigger(body)
     
     return NextResponse.json({
       success: true,
