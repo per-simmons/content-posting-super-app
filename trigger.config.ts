@@ -4,6 +4,7 @@ export default defineConfig({
   project: process.env.TRIGGER_PROJECT_ID || "voice-emulator-project",
   runtime: "node",
   logLevel: "info",
+  maxDuration: 300, // 5 minutes
   retries: {
     enabledInDev: true,
     default: {

@@ -67,7 +67,7 @@ export const voiceEmulatorPipeline = task({
     // Consolidation step
     const consolidationResult = await (async () => {
       console.log("Starting consolidation step")
-      return await runConsolidationStep(sessionId, {
+      return await runConsolidationStep({ id: sessionId } as any, {
         ...context,
         newsletter: newsletterResult,
         twitter: twitterResult,
