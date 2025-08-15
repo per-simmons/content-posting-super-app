@@ -38,3 +38,6 @@ next-env.d.ts
 # voice emulator test outputs
 /app/docs/voice-emulator-8-14-25/
 /docs/voice-emulator-8-14-25/
+
+# trigger.dev
+.trigger/
