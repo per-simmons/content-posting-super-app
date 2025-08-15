@@ -4,7 +4,7 @@ import { runDiscoveryStep } from "@/lib/voice-emulator/steps/discovery"
 import { runNewsletterStep } from "@/lib/voice-emulator/steps/newsletter"
 import { runTwitterStep } from "@/lib/voice-emulator/steps/twitter"
 import { runLinkedInStep } from "@/lib/voice-emulator/steps/linkedin"
-import { runBlogStep } from "@/lib/voice-emulator/steps/blog"
+import { runBlogStepOptimized } from "@/lib/voice-emulator/steps/blog-optimized"
 
 // Extend timeout for long-running API calls
 export const maxDuration = 300 // 5 minutes
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
       results.linkedin = { error: error instanceof Error ? error.message : "Failed" }
     }
     
-    // Run blog step
+    // Run blog step (optimized)
     try {
-      results.blog = await runBlogStep(sessionId, context)
+      results.blog = await runBlogStepOptimized(sessionId, context)
       context = { ...context, ...results.blog }
     } catch (error) {
       results.blog = { error: error instanceof Error ? error.message : "Failed" }

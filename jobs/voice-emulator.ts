@@ -4,7 +4,7 @@ import { runDiscoveryStep } from "@/lib/voice-emulator/steps/discovery"
 import { runNewsletterStep } from "@/lib/voice-emulator/steps/newsletter"
 import { runTwitterStep } from "@/lib/voice-emulator/steps/twitter"
 import { runLinkedInStep } from "@/lib/voice-emulator/steps/linkedin"
-import { runBlogStep } from "@/lib/voice-emulator/steps/blog"
+import { runBlogStepOptimized } from "@/lib/voice-emulator/steps/blog-optimized"
 import { runConsolidationStep } from "@/lib/voice-emulator/steps/consolidation"
 import { runAnalysisStep } from "@/lib/voice-emulator/steps/analysis"
 // Emulation step not yet implemented
@@ -59,8 +59,8 @@ export const voiceEmulatorPipeline = task({
         return await runLinkedInStep(sessionId, context)
       })(),
       (async () => {
-        console.log("Starting blog step")
-        return await runBlogStep(sessionId, context)
+        console.log("Starting blog step (optimized)")
+        return await runBlogStepOptimized(sessionId, context)
       })(),
     ])
     
