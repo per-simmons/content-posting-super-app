@@ -2,22 +2,35 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { SimpleEditor } from './components/Editor/SimpleEditor'
-import { CommandPalette } from './components/CommandPalette/CommandPalette'
+import { InlineCommandPalette } from './components/CommandPalette/InlineCommandPalette'
 import { AIProvider } from './components/AI/AIProvider'
 import { WorkingToolbar } from './components/Toolbar/WorkingToolbar'
-import { Sun, Moon, Undo, Redo, FileText, List, ListChecks } from 'lucide-react'
+import { VoiceProvider } from './components/Voice/VoiceProvider'
+import { VoiceGenerationModal } from './components/Voice/VoiceGenerationModal'
+import { VoiceProfilePanel } from './components/Voice/VoiceProfilePanel'
+import { Sun, Moon, Undo, Redo, FileText, List, ListChecks, Mic } from 'lucide-react'
 import './styles/editor.css'
 
-export default function LexEditor() {
+function LexEditor() {
   const [content, setContent] = useState('')
   const [selection, setSelection] = useState<any>(null)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [commandPalettePosition, setCommandPalettePosition] = useState({ x: 0, y: 0 })
   const [isDarkMode, setIsDarkMode] = useState(true)
+  const [isClient, setIsClient] = useState(false)
+
+  // Fix hydration issues by ensuring client-only rendering for dynamic content
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
   const [title, setTitle] = useState('')
   const [showToolbar, setShowToolbar] = useState(false)
   const [editorState, setEditorState] = useState<'initial' | 'writing'>('initial')
+  const [showVoiceModal, setShowVoiceModal] = useState(false)
+  const [showVoicePanel, setShowVoicePanel] = useState(false)
+  const [voicePanelSelectedText, setVoicePanelSelectedText] = useState<string>('')
   const titleRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -25,7 +38,37 @@ export default function LexEditor() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey && e.key === 'k') {
         e.preventDefault()
+        
+        // Capture caret position
+        const selection = window.getSelection()
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          const rect = range.getBoundingClientRect()
+          
+          // Use the end of the selection/caret position
+          setCommandPalettePosition({
+            x: rect.right || rect.left,
+            y: rect.bottom || rect.top
+          })
+        } else {
+          // Fallback to center of screen if no selection
+          setCommandPalettePosition({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 3
+          })
+        }
+        
         setShowCommandPalette(true)
+      } else if (e.metaKey && e.key === 'e') {
+        e.preventDefault()
+        
+        // Capture selected text if any
+        const selection = window.getSelection()
+        const selectedText = selection ? selection.toString().trim() : ''
+        setVoicePanelSelectedText(selectedText)
+        
+        // Toggle voice panel
+        setShowVoicePanel(!showVoicePanel)
       }
     }
     
@@ -106,19 +149,60 @@ export default function LexEditor() {
     setCharCount(chars)
   }, [])
 
+  const handleVoiceContentGenerated = useCallback((generatedContent: string, generatedTitle?: string) => {
+    // Set the title if provided
+    if (generatedTitle && titleRef.current) {
+      titleRef.current.innerHTML = `<h1>${generatedTitle}</h1>`
+      setTitle(generatedTitle)
+    }
+    
+    // Set the content
+    setContent(generatedContent)
+    
+    // Update word/char counts
+    const text = generatedContent.replace(/<[^>]*>/g, '').trim()
+    const words = text ? text.split(/\s+/).length : 0
+    const chars = text.length
+    setWordCount(words)
+    setCharCount(chars)
+    
+    // Switch to writing mode
+    setEditorState('writing')
+    
+    // Focus the main editor
+    setTimeout(() => {
+      const mainEditor = document.querySelector('[data-editor-type="main"]') as HTMLElement
+      if (mainEditor) {
+        mainEditor.focus()
+      }
+    }, 100)
+  }, [])
+
+  const handleVoiceProfileSelection = useCallback((profileId: string, message: string) => {
+    // TODO: Handle the voice profile selection and message
+    // This will eventually call the voice generation API with the profile and message
+    console.log('Voice profile selected:', profileId, 'Message:', message)
+    
+    // For now, close the panel
+    setShowVoicePanel(false)
+  }, [])
+
+
 
   return (
     <AIProvider>
-      <div className={`min-h-screen transition-colors ${
-        isDarkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'
-      }`}>
+      <VoiceProvider>
+        <div className={`min-h-screen transition-colors ${
+          isDarkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'
+        }`}>
         {/* Main Editor Container */}
-        <div className="pt-12 px-6 pb-12">
-          <div className={`max-w-4xl mx-auto rounded-lg overflow-hidden ${
-            isDarkMode 
-              ? 'bg-[#242424] border-2 border-[#3a3a3a]' 
-              : 'bg-white border-2 border-gray-300'
-          }`}>
+        <div className="h-screen flex flex-col">
+          <div className="flex-1 px-6 pt-12">
+            <div className={`h-full max-w-4xl mx-auto rounded-lg overflow-hidden flex flex-col ${
+              isDarkMode 
+                ? 'bg-[#242424] border-2 border-[#3a3a3a]' 
+                : 'bg-white border-2 border-gray-300'
+            }`}>
             {/* Top Bar with Toolbar */}
             <div className={`px-4 py-2 border-b flex items-center justify-between ${
               isDarkMode ? 'border-[#3a3a3a] bg-[#242424]' : 'border-gray-200 bg-white'
@@ -129,31 +213,33 @@ export default function LexEditor() {
                 </div>
                 
                 {/* Toolbar appears here when text is selected */}
-                {showToolbar && (
+                {isClient && showToolbar && (
                   <div className="ml-4">
                     <WorkingToolbar isDarkMode={isDarkMode} />
                   </div>
                 )}
               </div>
               
-              <div className="flex items-center gap-2">
-                <button
-                  className={`p-2 rounded-lg transition-colors hover:bg-[#3a3a3a]`}
-                  style={{ color: '#BBBBBB' }}
-                  title="Undo"
-                >
-                  <Undo className="h-4 w-4" />
-                </button>
-                <button
-                  className={`p-2 rounded-lg transition-colors hover:bg-[#3a3a3a]`}
-                  style={{ color: '#BBBBBB' }}
-                  title="Redo"
-                >
-                  <Redo className="h-4 w-4" />
-                </button>
-              </div>
+              {isClient && (
+                <div className="flex items-center gap-2">
+                  <button
+                    className={`p-2 rounded-lg transition-colors hover:bg-[#3a3a3a]`}
+                    style={{ color: '#BBBBBB' }}
+                    title="Undo"
+                  >
+                    <Undo className="h-4 w-4" />
+                  </button>
+                  <button
+                    className={`p-2 rounded-lg transition-colors hover:bg-[#3a3a3a]`}
+                    style={{ color: '#BBBBBB' }}
+                    title="Redo"
+                  >
+                    <Redo className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
-            <div className={`p-12 ${editorState === 'writing' ? '' : ''}`}>
+            <div className={`p-12 flex-1 overflow-y-auto ${editorState === 'writing' ? '' : ''}`}>
               {/* Title Section - Always visible */}
               <div className={`${editorState === 'writing' ? 'mb-0' : 'mb-8'}`}>
                 <div
@@ -191,12 +277,18 @@ export default function LexEditor() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault()
+                      console.log('Enter pressed in title, changing state to writing')
                       setEditorState('writing')
-                      // Focus body editor
+                      // Focus body editor after state change
                       setTimeout(() => {
                         const mainEditor = document.querySelector('[data-editor-type="main"]') as HTMLElement
-                        if (mainEditor) mainEditor.focus()
-                      }, 50)
+                        if (mainEditor) {
+                          console.log('Focusing main editor')
+                          mainEditor.focus()
+                        } else {
+                          console.log('Main editor not found')
+                        }
+                      }, 100)
                     }
                   }}
                 />
@@ -212,6 +304,19 @@ export default function LexEditor() {
                   
                   {/* AI Action Buttons */}
                   <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowVoicePanel(true)}
+                      className={`px-5 py-3 rounded-lg border flex items-center gap-3 transition-colors ${
+                        isDarkMode 
+                          ? 'border-[#3a3a3a] hover:bg-[#2a2a2a]' 
+                          : 'border-gray-300 hover:bg-gray-100'
+                      }`}
+                      style={{ color: '#888888' }}
+                    >
+                      <Mic className="h-4 w-4" />
+                      <span>Start with Voice</span>
+                    </button>
+                    
                     <button
                       className={`px-5 py-3 rounded-lg border flex items-center gap-3 transition-colors ${
                         isDarkMode 
@@ -247,6 +352,7 @@ export default function LexEditor() {
                       <ListChecks className="h-4 w-4" />
                       <span>Topics to cover</span>
                     </button>
+                    
                   </div>
                 </div>
               )}
@@ -267,18 +373,39 @@ export default function LexEditor() {
                 />
               )}
             </div>
+            </div>
           </div>
         </div>
 
-        {showCommandPalette && (
-          <CommandPalette
+        {isClient && showCommandPalette && (
+          <InlineCommandPalette
             onClose={() => setShowCommandPalette(false)}
             selection={selection}
             content={content}
             onContentChange={handleContentChange}
             isDarkMode={isDarkMode}
+            position={commandPalettePosition}
           />
         )}
+
+        {isClient && showVoiceModal && (
+          <VoiceGenerationModal
+            onClose={() => setShowVoiceModal(false)}
+            onContentGenerated={handleVoiceContentGenerated}
+            isDarkMode={isDarkMode}
+          />
+        )}
+
+        {isClient && (
+          <VoiceProfilePanel
+            isOpen={showVoicePanel}
+            onClose={() => setShowVoicePanel(false)}
+            onSelectProfile={handleVoiceProfileSelection}
+            isDarkMode={isDarkMode}
+            selectedText={voicePanelSelectedText}
+          />
+        )}
+
         
         {/* Theme Toggle Button - Bottom Right */}
         <button
@@ -291,9 +418,16 @@ export default function LexEditor() {
           style={{ color: '#BBBBBB' }}
           title="Toggle theme"
         >
-          {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {isClient ? (
+            isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
         </button>
-      </div>
+        </div>
+      </VoiceProvider>
     </AIProvider>
   )
 }
+
+export default LexEditor
