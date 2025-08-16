@@ -1,0 +1,94 @@
+/* Lex Command Palette CSS Variables and Styles */
+:root {
+  --cp-bg: #151922;
+  --cp-border: #262A33;
+  --cp-shadow: 0 12px 28px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
+  --row-hover: rgba(255,255,255,.06);
+  --row-active: rgba(47,129,247,.14);
+  --text: #CFD6E4;
+  --text-strong: #EDEFF3;
+  --muted: #9FA8BA;
+  --blue: #2F81F7;
+  --chip-gray-bg: rgba(255,255,255,.12);
+  --chip-gray-fg: #DDE3ED;
+}
+
+.cp-input::placeholder {
+  color: #9FA8BA;
+}
+
+.cp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.cp-ico {
+  flex: 0 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.cp-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font: 500 16px/24px Inter, system-ui;
+  color: var(--text-strong);
+}
+
+.cp-chip {
+  flex: 0 0 auto;
+  font: 600 12px/18px Inter, system-ui;
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.cp-chip.gray {
+  background: var(--chip-gray-bg);
+  color: var(--chip-gray-fg);
+}
+
+.cp-chip.blue {
+  background: var(--blue);
+  color: #fff;
+}
+
+.cp-chevron {
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
+
+.cp-divider {
+  height: 1px;
+  background: var(--cp-border);
+  margin: 8px 12px;
+}
+
+/* Pointer/Arrow for command palette */
+.cp-palette {
+  position: relative;
+}
+
+.cp-palette::after {
+  content: '';
+  position: absolute;
+  top: var(--pointer-top, -4px);
+  left: var(--pointer-left, 20px);
+  width: 8px;
+  height: 8px;
+  background: var(--cp-bg);
+  border: 1px solid var(--cp-border);
+  border-right: none;
+  border-bottom: none;
+  transform: var(--pointer-transform, rotate(45deg));
+  z-index: -1;
+}

@@ -5,9 +5,9 @@ const openai = new OpenAI({
 })
 
 export class URLClassifierAgent {
-  private systemPrompt = `You are a URL classifier. Respond with ONLY a JSON array of blog post URLs.
-No explanation. No formatting. Just the array.
-Maximum 50 URLs.`
+  private systemPrompt = `You are a URL classifier. Respond with ONLY a JSON object containing an array of blog post URLs.
+Use this exact format: {"urls": ["url1", "url2", ...]}
+No explanation. No additional fields. Maximum 50 URLs.`
 
   async classifyBlogUrls(urls: string[], authorName: string): Promise<string[]> {
     if (urls.length === 0) return []
@@ -29,17 +29,17 @@ Exclude:
 URLs to classify:
 ${urls.join('\n')}
 
-Return JSON array of up to 50 blog post URLs, ordered by recency if dates are visible.`
+Return JSON object with format: {"urls": ["url1", "url2", ...]} containing up to 50 blog post URLs, ordered by recency if dates are visible.`
 
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: userPrompt }
         ],
         temperature: 0,        // Deterministic = faster
-        max_tokens: 500,       // Limit output size
+        max_tokens: 2000,      // Increased for full URL list
         response_format: { type: "json_object" }
       })
 
@@ -61,6 +61,9 @@ Return JSON array of up to 50 blog post URLs, ordered by recency if dates are vi
         return []
       } catch (parseError) {
         console.error("Failed to parse classifier response:", parseError)
+        console.error("Raw response content:", content)
+        console.error("Content length:", content?.length)
+        // Return empty array on parse failure instead of crashing
         return []
       }
     } catch (error) {
@@ -81,5 +84,69 @@ Return JSON array of up to 50 blog post URLs, ordered by recency if dates are vi
     )
 
     return results.flat().slice(0, 50)
+  }
+
+  async classifyNewsletterUrls(urls: string[], authorName: string): Promise<string[]> {
+    if (urls.length === 0) return []
+    
+    const userPrompt = `Given these URLs from ${authorName}'s newsletter/substack, identify which are individual newsletter issues.
+Look for:
+- URLs with dates (2024/08/, 2024-08-15, august-2024)
+- Issue numbers (/issue-42, /edition-15)
+- Newsletter archive pages with individual posts
+- Substack post URLs (/p/)
+- Email campaign URLs
+
+Exclude:
+- About pages, contact, privacy, terms
+- Subscribe/unsubscribe pages
+- Author bio pages
+- Category/tag pages
+- Homepage/index
+
+URLs to classify:
+${urls.join('\n')}
+
+Return JSON object with format: {"urls": ["url1", "url2", ...]} containing up to 30 newsletter issue URLs, ordered by recency if dates are visible.`
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a URL classifier. Respond with ONLY a JSON object containing an array of newsletter issue URLs. Use this exact format: {\"urls\": [\"url1\", \"url2\", ...]}. No explanation. No additional fields. Maximum 30 URLs."
+          },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0,
+        max_tokens: 2000,
+        response_format: { type: "json_object" }
+      })
+
+      const content = response.choices[0].message.content
+      if (!content) return []
+
+      try {
+        const result = JSON.parse(content)
+        // Handle different response formats
+        if (Array.isArray(result)) {
+          return result.slice(0, 30)
+        }
+        if (result.urls && Array.isArray(result.urls)) {
+          return result.urls.slice(0, 30)
+        }
+        if (result.newsletters && Array.isArray(result.newsletters)) {
+          return result.newsletters.slice(0, 30)
+        }
+        return []
+      } catch (parseError) {
+        console.error("Failed to parse newsletter classifier response:", parseError)
+        return []
+      }
+    } catch (error) {
+      console.error("Newsletter URL classification error:", error)
+      return []
+    }
   }
 }

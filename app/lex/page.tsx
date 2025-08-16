@@ -36,7 +36,7 @@ function LexEditor() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey && e.key === 'k') {
+      if (e.metaKey && e.key.toLowerCase() === 'k' && !e.altKey) {
         e.preventDefault()
         
         // Capture caret position
@@ -59,7 +59,7 @@ function LexEditor() {
         }
         
         setShowCommandPalette(true)
-      } else if (e.metaKey && e.key === 'e') {
+      } else if (e.metaKey && e.key.toLowerCase() === 'e') {
         e.preventDefault()
         
         // Capture selected text if any
@@ -67,8 +67,11 @@ function LexEditor() {
         const selectedText = selection ? selection.toString().trim() : ''
         setVoicePanelSelectedText(selectedText)
         
-        // Toggle voice panel
-        setShowVoicePanel(!showVoicePanel)
+        // Toggle voice panel using functional update to avoid stale closure
+        setShowVoicePanel(prev => !prev)
+      } else if (e.metaKey && e.key === 'b') {
+        e.preventDefault()
+        document.execCommand('bold')
       }
     }
     
@@ -196,7 +199,10 @@ function LexEditor() {
           isDarkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'
         }`}>
         {/* Main Editor Container */}
-        <div className="h-screen flex flex-col">
+        <div className="h-screen flex flex-col" style={{
+          marginRight: showVoicePanel ? '420px' : '0',
+          transition: 'margin-right 0.2s ease'
+        }}>
           <div className="flex-1 px-6 pt-12">
             <div className={`h-full max-w-4xl mx-auto rounded-lg overflow-hidden flex flex-col ${
               isDarkMode 
@@ -255,7 +261,8 @@ function LexEditor() {
                   data-default-format="h1"
                   onInput={(e) => {
                     const target = e.target as HTMLDivElement
-                    setTitle(target.innerHTML || '')
+                    // Extract clean text content, not HTML
+                    setTitle(target.textContent || target.innerText || '')
                   }}
                   onFocus={(e) => {
                     const target = e.target as HTMLDivElement
@@ -312,6 +319,7 @@ function LexEditor() {
                           : 'border-gray-300 hover:bg-gray-100'
                       }`}
                       style={{ color: '#888888' }}
+                      title="Start with Voice (⌘E)"
                     >
                       <Mic className="h-4 w-4" />
                       <span>Start with Voice</span>
@@ -403,6 +411,7 @@ function LexEditor() {
             onSelectProfile={handleVoiceProfileSelection}
             isDarkMode={isDarkMode}
             selectedText={voicePanelSelectedText}
+            docTitle={title || 'Untitled'}
           />
         )}
 

@@ -1,7 +1,8 @@
 import { defineConfig } from "@trigger.dev/sdk/v3"
+import { syncVercelEnvVars } from "@trigger.dev/build/extensions/core"
 
 export default defineConfig({
-  project: process.env.TRIGGER_PROJECT_ID || "voice-emulator-project",
+  project: "proj_bthjcbockixqeqvxmihq",
   runtime: "node",
   logLevel: "info",
   maxDuration: 300, // 5 minutes
@@ -16,4 +17,7 @@ export default defineConfig({
     },
   },
   dirs: ["./jobs"],
+  build: {
+    extensions: [syncVercelEnvVars()],
+  },
 })

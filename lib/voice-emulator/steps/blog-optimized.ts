@@ -93,50 +93,83 @@ export async function runBlogStepOptimized(sessionId: string, context: any) {
 }
 
 async function extractWithJina(urls: string[]): Promise<any[]> {
-  const BATCH_SIZE = 10
+  const BATCH_SIZE = 1  // Process one URL at a time to respect 20 RPM limit
+  const DELAY_BETWEEN_REQUESTS = 3100  // 3.1 seconds = ~19 requests per minute (under 20 RPM)
   const batches = chunk(urls, BATCH_SIZE)
   const articles: any[] = []
 
-  for (const batch of batches) {
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i]
+    console.log(`Processing batch ${i + 1}/${batches.length} (${batch.length} URLs)`)
+    
+    // Add delay between requests to respect 20 RPM limit
+    if (i > 0) {
+      await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS))
+    }
+    
     const batchPromises = batch.map(async (url) => {
-      try {
-        const response = await fetch(`https://r.jina.ai/${url}`, {
-          headers: {
-            'Accept': 'text/markdown',
-            'X-Return-Format': 'markdown',
-            'X-Timeout': '30'
-          },
-          signal: AbortSignal.timeout(30000)
-        })
-
-        if (!response.ok) {
-          console.error(`Jina extraction failed for ${url}: ${response.status}`)
-          return null
-        }
-
-        const content = await response.text()
-        
-        // Extract title from content or URL
-        const titleMatch = content.match(/^#\s+(.+)$/m)
-        const title = titleMatch ? titleMatch[1] : url.split('/').pop()?.replace(/-/g, ' ') || 'Untitled'
-
-        return {
-          url,
-          title,
-          content: content.substring(0, 10000), // Limit content size
-          extractedAt: new Date().toISOString()
-        }
-      } catch (error) {
-        console.error(`Error extracting ${url}:`, error)
-        return null
-      }
+      return await extractSingleUrlWithRetry(url, 3)
     })
 
     const batchResults = await Promise.all(batchPromises)
-    articles.push(...batchResults.filter(a => a !== null))
+    articles.push(...batchResults.filter(result => result !== null))
   }
 
   return articles
+}
+
+async function extractSingleUrlWithRetry(url: string, maxRetries: number): Promise<any | null> {
+  let retryDelay = 1000  // Start with 1 second
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(`https://r.jina.ai/${url}`, {
+        headers: {
+          'Accept': 'text/markdown',
+          'X-Return-Format': 'markdown',
+          'X-Timeout': '30'
+        },
+        signal: AbortSignal.timeout(30000)
+      })
+
+      if (response.status === 429) {
+        // Rate limited - use exponential backoff
+        console.log(`Rate limited for ${url}, attempt ${attempt + 1}/${maxRetries}, waiting ${retryDelay}ms`)
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay + Math.random() * 500))
+          retryDelay *= 2  // Exponential backoff
+          continue
+        }
+        return null
+      }
+
+      if (!response.ok) {
+        console.error(`Jina extraction failed for ${url}: ${response.status}`)
+        return null
+      }
+
+      const content = await response.text()
+      
+      // Extract title from content or URL
+      const titleMatch = content.match(/^#\s+(.+)$/m)
+      const title = titleMatch ? titleMatch[1] : url.split('/').pop()?.replace(/-/g, ' ') || 'Untitled'
+
+      return {
+        url,
+        title,
+        content: content.substring(0, 10000), // Limit content size
+        extractedAt: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error(`Error extracting ${url}:`, error)
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        retryDelay *= 2
+      }
+    }
+  }
+  
+  return null
 }
 
 async function getPopularPosts(blogUrl: string, targetName: string): Promise<any[]> {

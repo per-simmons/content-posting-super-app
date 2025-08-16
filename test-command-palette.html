@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Command Palette Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0a0f1a;
+            color: white;
+        }
+        .test-status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .pass { background: #1a472a; }
+        .fail { background: #7f1d1d; }
+        .info { background: #1e40af; }
+    </style>
+</head>
+<body>
+    <h1>Command Palette Test Results</h1>
+    
+    <div class="test-status info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Open <a href="http://localhost:3002/lex" target="_blank">http://localhost:3002/lex</a></li>
+            <li>Place cursor in the text editor</li>
+            <li>Press "/" to open the command palette</li>
+            <li>Verify the following:</li>
+        </ol>
+    </div>
+
+    <div class="test-status info">
+        <h3>Expected Results:</h3>
+        <ul>
+            <li>✅ Palette appears <strong>near the cursor position</strong>, not at bottom of screen</li>
+            <li>✅ Background is <strong>neutral graphite (#151922)</strong>, not blue</li>
+            <li>✅ Width is exactly <strong>420px</strong></li>
+            <li>✅ Border radius is <strong>12px</strong></li>
+            <li>✅ Search bar has <strong>subtle background</strong> with proper focus states</li>
+            <li>✅ Commands are in correct order:
+                <ol>
+                    <li>Edit selected text (blue AI icon)</li>
+                    <li>Run checks (blue AI icon)</li>
+                    <li>Chat about your document (blue AI icon)</li>
+                    <li>Continue writing (blue AI icon)</li>
+                    <li><em>— Divider line —</em></li>
+                    <li>Insert image (gray icon)</li>
+                    <li>Format (gray icon)</li>
+                    <li>Copy selected text as... (gray icon)</li>
+                    <li>View options (gray icon)</li>
+                    <li>History (gray icon)</li>
+                    <li>Switch document (gray icon)</li>
+                </ol>
+            </li>
+            <li>✅ Hover states use <strong>neutral gray wash</strong>, not solid blue</li>
+            <li>✅ Selected state uses <strong>subtle blue wash</strong>, not solid blue bar</li>
+            <li>✅ Shortcut chips are <strong>gray</strong> (⌘\, +++, ⌘P)</li>
+            <li>✅ Blue "↵ Submit" chip appears only when Edit row is focused</li>
+            <li>✅ Pointer/arrow points to cursor position</li>
+        </ul>
+    </div>
+
+    <div class="test-status info">
+        <h3>Key Fixes Applied:</h3>
+        <ul>
+            <li>🔧 Fixed positioning: palette now anchors to caret position</li>
+            <li>🔧 Fixed visual theme: neutral graphite background, no blue surfaces</li>
+            <li>🔧 Fixed chip colors: gray for shortcuts, blue only for Submit</li>
+            <li>🔧 Fixed color consistency: proper blue tokens (#2F81F7)</li>
+            <li>🔧 Fixed command order: matches Lex.page exactly</li>
+            <li>🔧 Fixed CSS variables: proper design token system</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('Command Palette Test Page Loaded');
+        console.log('Navigate to /lex and test the command palette with "/" key');
+    </script>
+</body>
+</html>

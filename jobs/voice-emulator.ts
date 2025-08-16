@@ -1,11 +1,12 @@
 import { task } from "@trigger.dev/sdk/v3"
 import { z } from "zod"
 import { runDiscoveryStep } from "@/lib/voice-emulator/steps/discovery"
-import { runNewsletterStep } from "@/lib/voice-emulator/steps/newsletter"
+import { runNewsletterStepOptimized } from "@/lib/voice-emulator/steps/newsletter-optimized"
 import { runTwitterStep } from "@/lib/voice-emulator/steps/twitter"
-import { runLinkedInStep } from "@/lib/voice-emulator/steps/linkedin"
+import { runLinkedInStepOptimized } from "@/lib/voice-emulator/steps/linkedin-optimized"
 import { runBlogStepOptimized } from "@/lib/voice-emulator/steps/blog-optimized"
 import { runConsolidationStep } from "@/lib/voice-emulator/steps/consolidation"
+import { runVectorizationStepImproved } from "@/lib/voice-emulator/steps/vectorization-improved"
 import { runAnalysisStep } from "@/lib/voice-emulator/steps/analysis"
 // Emulation step not yet implemented
 // import { runEmulationStep } from "@/lib/voice-emulator/steps/emulation"
@@ -47,8 +48,8 @@ export const voiceEmulatorPipeline = task({
     // Run content collection steps in parallel
     const [newsletterResult, twitterResult, linkedinResult, blogResult] = await Promise.all([
       (async () => {
-        console.log("Starting newsletter step")
-        return await runNewsletterStep(sessionId, context)
+        console.log("Starting newsletter step (optimized)")
+        return await runNewsletterStepOptimized(sessionId, context)
       })(),
       (async () => {
         console.log("Starting Twitter step")
@@ -56,7 +57,7 @@ export const voiceEmulatorPipeline = task({
       })(),
       (async () => {
         console.log("Starting LinkedIn step")
-        return await runLinkedInStep(sessionId, context)
+        return await runLinkedInStepOptimized(sessionId, context)
       })(),
       (async () => {
         console.log("Starting blog step (optimized)")
@@ -67,13 +68,19 @@ export const voiceEmulatorPipeline = task({
     // Consolidation step
     const consolidationResult = await (async () => {
       console.log("Starting consolidation step")
-      return await runConsolidationStep({ id: sessionId } as any, {
+      return await runConsolidationStep({ id: sessionId, creatorName: targetName } as any, {
         ...context,
-        newsletter: newsletterResult,
-        twitter: twitterResult,
-        linkedin: linkedinResult,
-        blog: blogResult,
+        newsletterContent: newsletterResult?.articles || [],
+        tweets: twitterResult?.tweets || [],
+        linkedinPosts: linkedinResult?.posts || [],
+        blogArticles: blogResult?.articles || [],
       })
+    })()
+    
+    // Vectorization step with contextual retrieval
+    const vectorizationResult = await (async () => {
+      console.log("Starting vectorization step (improved with contextual retrieval)")
+      return await runVectorizationStepImproved({ id: sessionId, creatorName: targetName } as any, consolidationResult)
     })()
     
     // Analysis step
@@ -82,6 +89,7 @@ export const voiceEmulatorPipeline = task({
       return await runAnalysisStep(sessionId, {
         ...context,
         consolidation: consolidationResult,
+        vectorization: vectorizationResult,
       })
     })()
     
@@ -109,6 +117,7 @@ export const voiceEmulatorPipeline = task({
         linkedin: linkedinResult,
         blog: blogResult,
         consolidation: consolidationResult,
+        vectorization: vectorizationResult,
         analysis: analysisResult,
         emulation: emulationResult,
       },

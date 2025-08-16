@@ -36,8 +36,9 @@ export async function runLinkedInStep(sessionId: string, context: any) {
       },
       body: JSON.stringify({
         username: profileUrl, // The LinkedIn profile URL
-        limit: 25, // Get 25 posts as requested
-        page_number: 1
+        limit: 1, // Get 1 post for testing
+        page_number: 1,
+        timeoutSecs: 1800  // 30 minutes timeout for paid tier
       })
     })
     
@@ -59,7 +60,7 @@ export async function runLinkedInStep(sessionId: string, context: any) {
     const run = await response.json()
     
     // Wait for the actor to complete (with timeout)
-    const maxWaitTime = 60000 // 60 seconds - typically completes in 20 seconds
+    const maxWaitTime = 1860000 // 31 minutes - matches Apify actor timeout of 30 minutes
     const startTime = Date.now()
     let result = null
     

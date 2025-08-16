@@ -5,8 +5,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    // Trigger the voice emulator pipeline with the provided data
-    const result = await voiceEmulatorPipeline.trigger(body)
+    // Generate a session ID and prepare the payload
+    const sessionId = `voice-emulator-${Date.now()}-${Math.random().toString(36).substring(7)}`
+    const payload = {
+      sessionId,
+      targetName: body.targetName,
+      hints: body.hints || {},
+      sources: body.sources
+    }
+    
+    // Trigger the voice emulator pipeline with the correct payload structure
+    const result = await voiceEmulatorPipeline.trigger(payload)
     
     return NextResponse.json({
       success: true,

@@ -6,7 +6,14 @@ export async function createGoogleDoc(
   try {
     // Dynamic import for server-side only
     const { google } = await import('googleapis')
-    const { JWT } = await import('google-auth-library')
+    const googleAuthLibrary = await import('google-auth-library')
+    console.log('google-auth-library import:', Object.keys(googleAuthLibrary))
+    const { JWT } = googleAuthLibrary
+    console.log('JWT extracted:', typeof JWT, JWT)
+    
+    if (!JWT) {
+      throw new Error('JWT is undefined - google-auth-library import failed')
+    }
     
     const auth = getGoogleAuth(JWT)
     const drive = google.drive({ version: 'v3', auth })
@@ -59,9 +66,13 @@ export async function createGoogleDoc(
 function getGoogleAuth(JWT: any) {
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}')
   
-  return new JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
+  // Fix Vercel environment variable newline handling
+  if (credentials.private_key) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n')
+  }
+  
+  return JWT.fromJSON({
+    ...credentials,
     scopes: [
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/documents'

@@ -133,8 +133,7 @@ async function executeStep(
       const sessionVec = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
       return await runVectorizationStep(sessionVec, context)
     case "retrieval":
-      const sessionRet = { id: sessionId, creatorName: context.creatorName || 'Unknown' } as VoiceEmulatorSession
-      return await runRetrievalStep(sessionRet, context)
+      return await runRetrievalStep(sessionId, context)
     case "analysis":
       return await runAnalysisStep(sessionId, context)
     case "synthesis":

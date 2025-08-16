@@ -36,14 +36,17 @@ export async function runTwitterStep(sessionId: string, context: any) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: cleanHandle, // Username without @ symbol
-        "filter:replies": false, // Exclude replies to focus on main tweets
-        "include:nativeretweets": false, // Exclude retweets 
-        maxTweets: 50, // Get up to 50 tweets
+        searchTerms: [`from:${cleanHandle}`],
+        lang: "en",
+        tweetLanguage: "en", 
+        maxItems: 1,
+        addUserInfo: true,
+        onlyVerifiedUsers: false,
         proxy: {
           useApifyProxy: true,
-          apifyProxyGroups: ['RESIDENTIAL'] // Use residential proxy for reliability
-        }
+          apifyProxyGroups: ['RESIDENTIAL']
+        },
+        timeoutSecs: 1200  // 20 minutes timeout for paid tier
       })
     })
     
@@ -65,7 +68,7 @@ export async function runTwitterStep(sessionId: string, context: any) {
     const run = await response.json()
     
     // Wait for the actor to complete (with timeout)
-    const maxWaitTime = 60000 // 60 seconds - typically completes in 20 seconds
+    const maxWaitTime = 1260000 // 21 minutes - matches Apify actor timeout of 20 minutes
     const startTime = Date.now()
     let result = null
     
